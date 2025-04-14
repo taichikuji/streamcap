@@ -1,0 +1,36 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[[headers]]
+  for = "/*"
+    [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'"
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=self, microphone=self, display-capture=()"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/github"
+  to = "https://github.com/taichikuji"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/discord"
+  to = "/?id=199632174603829249"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/donate"
+  to = "https://paypal.me/ivanperezf"
+  status = 301
+  force = true
