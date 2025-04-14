@@ -2,25 +2,31 @@ body {
   margin: 0;
   background: #131316;
   color: #eee;
-
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden; // Prevent horizontal scrollbars
 }
 
 div.video-section {
-  padding-top: 60px;
+  padding-top: min(60px, 5vh); // Use responsive padding based on viewport height
+  width: 100%;
 }
 
 div.wrapper {
   margin: 0 auto;
   max-width: 1280px;
+  width: 95%; // Ensure some margin on smaller screens
+  padding: 0 10px;
+  box-sizing: border-box;
 }
 
 #video {
   width: 100%;
   display: block;
   box-shadow: 2px 2px 6px 4px rgba(0, 0, 0, 0.3);
-
   aspect-ratio: 16 / 9;
+  background-color: #000;
+  max-height: 85vh; // Ensure video doesn't get too large on tall screens
+  object-fit: contain; // Maintain aspect ratio
 }
 
 div.controls-grid {
@@ -35,6 +41,7 @@ div.controls-grid {
 
   i {
     font-size: 24px;
+    color: white; // Ensure consistent color for all icons
   }
 
   .right-grid {
@@ -43,6 +50,12 @@ div.controls-grid {
     display: flex;
     align-items: center;
     gap: 20px;
+  }
+  
+  .video-settings-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
   }
 
   button {
@@ -55,54 +68,89 @@ div.controls-grid {
     background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 140 140' width='8' height='8' xmlns='http://www.w3.org/2000/svg'><g><path d='m121.3,34.6c-1.6-1.6-4.2-1.6-5.8,0l-51,51.1-51.1-51.1c-1.6-1.6-4.2-1.6-5.8,0-1.6,1.6-1.6,4.2 0,5.8l53.9,53.9c0.8,0.8 1.8,1.2 2.9,1.2 1,0 2.1-0.4 2.9-1.2l53.9-53.9c1.7-1.6 1.7-4.2 0.1-5.8z' fill='white'/></g></svg>")
       no-repeat;
     background-position: right 5px top 50%;
-    padding-right: 15px;
+    padding: 3px 15px 3px 5px;
     color: white;
+    background-color: rgba(19, 19, 22, 0.8);
+    border-radius: 3px;
+    cursor: pointer;
+    width: auto;
+    z-index: 10;
 
     appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     border: none;
+    
+    &:focus {
+      outline: none;
+      background-color: #1e1e24;
+    }
+    
+    option {
+      background-color: #131316;
+      padding: 5px;
+    }
   }
 
   .control {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 
     cursor: pointer;
 
-    &#videoMode {
-      gap: 8px;
+    opacity: 0.8; // Set consistent default opacity for all controls
+    transition: opacity 0.2s ease-in;
+    
+    &:hover, &:focus-within {
+      opacity: 1;
+    }
+
+    &#resolution, &#framerate {
+      select {
+        min-width: 100px;
+        display: inline-block;
+      }
+
+      // Ensure select is visible and interactive
+      &:hover select, &:focus-within select {
+        opacity: 1;
+      }
     }
 
     &#record {
+      position: relative;
+      
       &.recording {
         color: red;
+        animation: pulse 2s infinite;
+        
+        &:before {
+          content: "";
+          position: absolute;
+          width: 12px;
+          height: 12px;
+          background-color: red;
+          border-radius: 50%;
+          top: -5px;
+          right: -5px;
+        }
       }
     }
-
-    &#volume {
-      gap: 0;
-
-      input {
-        margin-right: 0;
-        visibility: hidden;
-        width: 0;
-
-        transition: width 0.3s ease-in-out;
-      }
-
-      &:hover input {
-        margin-right: 5px;
-        visibility: visible;
-        width: 100px;
-      }
-    }
-
-    opacity: 0.2;
-    transition: opacity 0.2s ease-in;
-    &:hover {
+    
+    /* Always show control at full opacity when it has focus or recording */
+    &:focus-within,
+    &#record.recording {
       opacity: 1;
     }
   }
+}
+
+/* Pulse animation for recording */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
 .bottom-text {
@@ -113,6 +161,7 @@ div.controls-grid {
   right: 5px;
 
   opacity: 0.5;
+  transition: opacity 0.2s ease;
   &:hover {
     opacity: 1;
   }
@@ -122,8 +171,65 @@ div.controls-grid {
     color: #3e2ea7;
 
     opacity: 0.5;
+    transition: opacity 0.2s ease;
     &:hover {
       opacity: 1;
     }
+  }
+  
+  #status-message {
+    margin-right: 10px;
+    font-weight: bold;
+    
+    &.error {
+      color: #ff3333;
+    }
+    
+    &.loading {
+      color: #3e2ea7;
+    }
+    
+    &.success {
+      color: #33cc33;
+    }
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  div.video-section {
+    padding-top: 10px;
+  }
+  
+  div.controls-grid {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+    gap: 15px;
+    
+    .right-grid {
+      margin-left: 0;
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    .video-settings-group {
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+}
+
+/* Tablet-sized screens */
+@media (min-width: 769px) and (max-width: 1024px) {
+  div.wrapper {
+    width: 98%;
+  }
+  
+  div.controls-grid {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 5px;
   }
 }

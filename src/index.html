@@ -5,7 +5,36 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Capture - stream all your inputs</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>StreamCap - View, capture or record your webcam and game streams</title>
+    <meta name="title" content="StreamCap - View, capture or record your webcam and game streams">
+    <meta name="description" content="A lightweight, browser-based application for viewing, capturing and recording from your webcam or capture device.">
+    <meta name="keywords" content="capture card, game capture, streaming, recording, webcam, live feed">
+    <meta name="author" content="Ivan Perez">
+    
+    <!-- Theme Color for browsers -->
+    <meta name="theme-color" content="#8c579a">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://streamcap.netlify.app/">
+    <meta property="og:title" content="StreamCap - View, capture or record your webcam and game streams">
+    <meta property="og:description" content="A lightweight, browser-based application for viewing, capturing and recording from your webcam or capture device.">
+    <meta property="og:image" content="assets/logo.svg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://streamcap.netlify.app/">
+    <meta property="twitter:title" content="StreamCap - View, capture or record your webcam and game streams">
+    <meta property="twitter:description" content="A lightweight, browser-based application for viewing, capturing and recording from your webcam or capture device.">
+    <meta property="twitter:image" content="assets/logo.svg">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+    <link rel="apple-touch-icon" href="assets/logo.svg">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="styles/styles.scss">
 </head>
@@ -17,28 +46,35 @@
             <div class="controls-grid">
                 <div class="control" id="fullscreen"><i class="fa fa-expand"></i> Fullscreen</div>
 
-                <div class="control" id="videoMode">
-                    <i class="fa fa-tv"></i>
-                    <select></select>
+                <div class="video-settings-group">
+                    <div class="control" id="resolution">
+                        <i class="fa fa-desktop"></i>
+                        <select id="resolutionSelect"></select>
+                    </div>
+                    <div class="control" id="framerate">
+                        <i class="fa fa-film"></i>
+                        <select id="framerateSelect"></select>
+                    </div>
+                    <div class="control" id="audioDevice">
+                        <i class="fa fa-microphone"></i>
+                        <select id="audioDeviceSelect"></select>
+                    </div>
                 </div>
 
                 <div class="right-grid">
                     <div class="control" id="snapshot"><i class="fa fa-camera"></i></div>
                     <div class="control" id="record"><i class="fa fa-circle"></i></div>
-                    <div class="control" id="volume">
-                        <input type="range" min="0" max="1" step="0.01" value="100" autocomplete="off">
-                        <i class="fa fa-volume-up"></i>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
     <span class="bottom-text">
-        <span>Made with ❤️ by <a href="https://github.com/moka491/">Moka</a></span> | <a href="#" id="reset">Reset
+        <span id="status-message"></span>
+        <span>Made with ❤️ by <a href="https://github.com/Taichikuji/">Taichikuji</a></span> | <a href="#" id="reset">Reset
             settings</a>
     </span>
 
-    <script src="scripts/script.ts"></script>
+    <script type="module" src="scripts/script.ts"></script>
 </body>
 
 </html>

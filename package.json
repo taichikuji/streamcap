@@ -1,6 +1,6 @@
 {
-  "name": "stream-capture",
-  "version": "1.0.0",
+  "name": "streamcap",
+  "version": "2.0.0",
   "description": "View, capture or record your webcam and game streams right in your browser!",
   "scripts": {
     "dev": "parcel src/index.html",
@@ -14,15 +14,27 @@
     "webcam",
     "live feed"
   ],
-  "author": "Jannis Becker",
+  "author": "Ivan Perez",
   "license": "GNU GPLv3",
   "devDependencies": {
-    "@types/dom-mediacapture-record": "^1.0.7",
-    "parcel-bundler": "^1.12.5",
-    "sass": "^1.32.12",
-    "typescript": "^4.2.4"
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.22.20",
+    "@babel/preset-typescript": "^7.23.0",
+    "@parcel/transformer-sass": "^2.14.4",
+    "@types/dom-mediacapture-record": "^1.0.14",
+    "buffer": "^6.0.3",
+    "netlify-cli": "^16.4.2",
+    "parcel": "^2.14.4",
+    "process": "^0.11.10",
+    "sass": "^1.62.0",
+    "svgo": "^3.3.2",
+    "typescript": "^5.0.4"
   },
   "dependencies": {
     "fix-webm-duration": "^1.0.0"
-  }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ]
 }
