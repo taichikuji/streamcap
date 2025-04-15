@@ -13,11 +13,6 @@
     Permissions-Policy = "camera=self, microphone=self, display-capture=()"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
   from = "/github"
   to = "https://github.com/taichikuji"
   status = 301
@@ -34,3 +29,8 @@
   to = "https://paypal.me/ivanperezf"
   status = 301
   force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
