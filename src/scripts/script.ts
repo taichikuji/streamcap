@@ -194,7 +194,7 @@ class StreamCap {
         throw new Error("No video devices found");
 
       this.pickVideoDevice(videoDevices);
-      this.pickAudioDevice(audioDevices);
+      this.pickAudioDevice(audioDevices, videoDevices);
 
       await this.detectCapabilities();
       return true;
@@ -210,7 +210,10 @@ class StreamCap {
     this.videoDeviceId = captureDevice?.deviceId || videoDevices[0].deviceId;
   }
 
-  private pickAudioDevice(audioDevices: MediaDeviceInfo[]) {
+  private pickAudioDevice(
+    audioDevices: MediaDeviceInfo[],
+    videoDevices: MediaDeviceInfo[] = [],
+  ) {
     const isVirtual = (d: MediaDeviceInfo) =>
       d.deviceId === "default" ||
       d.deviceId === "communications" ||
@@ -219,7 +222,7 @@ class StreamCap {
     const physical = audioDevices.filter((d) => !isVirtual(d));
 
     const videoLabel = this.videoDeviceId
-      ? audioDevices
+      ? videoDevices
           .find((d) => d.deviceId === this.videoDeviceId)
           ?.label?.toLowerCase() || ""
       : "";
@@ -780,6 +783,7 @@ class StreamCap {
         this.pickVideoDevice(videoDevices);
         this.pickAudioDevice(
           devices.filter((d) => d.kind === "audioinput"),
+          videoDevices,
         );
         this.showStatus("Reconnecting to available device...", "loading");
         await this.detectCapabilities();
@@ -795,7 +799,10 @@ class StreamCap {
     if (!audioStillPresent && !this.isRecording) {
       const audioDevices = devices.filter((d) => d.kind === "audioinput");
       if (audioDevices.length > 0) {
-        this.pickAudioDevice(audioDevices);
+        this.pickAudioDevice(
+          audioDevices,
+          devices.filter((d) => d.kind === "videoinput"),
+        );
         this.showStatus("Audio device changed, restarting...", "loading");
         await this.restartStream();
       }
