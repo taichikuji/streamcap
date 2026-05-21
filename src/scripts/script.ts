@@ -14,6 +14,7 @@ const MIME_PREFERENCE = [
   "video/webm;codecs=vp9,opus",
   "video/webm;codecs=vp8,opus",
   "video/webm",
+  "video/mp4;codecs=avc1,opus",
   "video/mp4",
 ];
 
@@ -223,11 +224,11 @@ class StreamCap {
           ?.label?.toLowerCase() || ""
       : "";
 
-    const matchingAudio =
-      videoLabel &&
-      physical.find((a) =>
-        a.label.toLowerCase().includes(videoLabel.split(" ")[0]),
-      );
+    const matchingAudio = videoLabel
+      ? physical.find((a) =>
+          a.label.toLowerCase().includes(videoLabel.split(" ")[0]),
+        )
+      : undefined;
 
     this.audioDeviceId =
       matchingAudio?.deviceId ||
@@ -427,6 +428,7 @@ class StreamCap {
       await new Promise<void>((resolve) => {
         this.elements.video.onloadedmetadata = () => resolve();
       });
+      this.elements.video.muted = false;
 
       this.setupMediaRecorder();
       this.updateUIControls();
@@ -727,6 +729,39 @@ class StreamCap {
     URL.revokeObjectURL(url);
   }
 
+  // ── Fullscreen compat ─────────────────────────────────────
+
+  private enterFullscreen(el: HTMLElement): Promise<void> {
+    const fn =
+      el.requestFullscreen ||
+      (el as any).webkitRequestFullscreen ||
+      (el as any).mozRequestFullScreen ||
+      (el as any).msRequestFullscreen;
+    return fn
+      ? fn.call(el)
+      : Promise.reject(new Error("Fullscreen not supported"));
+  }
+
+  private leaveFullscreen(): Promise<void> {
+    const fn =
+      document.exitFullscreen ||
+      (document as any).webkitExitFullscreen ||
+      (document as any).mozCancelFullScreen ||
+      (document as any).msExitFullscreen;
+    return fn
+      ? fn.call(document)
+      : Promise.reject(new Error("Fullscreen not supported"));
+  }
+
+  private get isFullscreen(): boolean {
+    return !!(
+      document.fullscreenElement ||
+      (document as any).webkitFullscreenElement ||
+      (document as any).mozFullScreenElement ||
+      (document as any).msFullscreenElement
+    );
+  }
+
   // ── Device-change recovery ──────────────────────────────────
 
   private onDeviceChange = async () => {
@@ -806,20 +841,20 @@ class StreamCap {
     });
 
     fullscreen.addEventListener("click", () =>
-      video
-        .requestFullscreen()
-        .catch((e) => console.error("Fullscreen error:", e)),
+      this.enterFullscreen(video).catch((e) =>
+        console.error("Fullscreen error:", e),
+      ),
     );
 
     video.addEventListener("dblclick", () => {
-      if (!document.fullscreenElement) {
-        video
-          .requestFullscreen()
-          .catch((e) => console.error("Fullscreen error:", e));
+      if (!this.isFullscreen) {
+        this.enterFullscreen(video).catch((e) =>
+          console.error("Fullscreen error:", e),
+        );
       } else {
-        document
-          .exitFullscreen()
-          .catch((e) => console.error("Exit fullscreen error:", e));
+        this.leaveFullscreen().catch((e) =>
+          console.error("Exit fullscreen error:", e),
+        );
       }
     });
 
@@ -836,7 +871,7 @@ class StreamCap {
       }
     });
 
-    navigator.mediaDevices.addEventListener(
+    navigator.mediaDevices?.addEventListener(
       "devicechange",
       this.onDeviceChange,
     );

@@ -82,10 +82,10 @@ This project is set up for easy deployment to Netlify. The included `netlify.tom
 | Browser | Status |
 |---------|--------|
 | Chrome / Edge (Linux, Windows, macOS) | Fully supported |
-| Firefox (all platforms) | Best effort — some capture cards may have limited resolution/framerate negotiation |
-| Safari | Not tested — WebRTC capture card support varies |
+| Firefox (all platforms) | Supported — resolution/framerate detection uses settings fallback since Firefox lacks `getCapabilities()` |
+| Safari 14.6+ (macOS, iOS) | Supported — records to MP4 (Safari doesn't support WebM recording); `playsinline` enabled for iOS autoplay |
 
-> StreamCap relies on `getUserMedia`, `MediaRecorder`, and `MediaStreamTrack.getCapabilities()`. Chromium-based browsers expose the richest capability data for USB capture devices.
+> StreamCap relies on `getUserMedia`, `MediaRecorder`, and `MediaStreamTrack.getCapabilities()`. Chromium-based browsers expose the richest capability data for USB capture devices. Firefox and Safari use graceful fallbacks.
 
 ## Contributing
 
