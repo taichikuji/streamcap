@@ -62,7 +62,7 @@ class StreamCap {
 
       this.loadSettings();
 
-      if (!this.videoId || !this.audioId) {
+      if (!this.videoId || !this.audioId || !(await this.deviceExists(this.videoId))) {
         this.status("Detecting devices...", "loading");
         await this.pickDevices();
       }
@@ -83,6 +83,10 @@ class StreamCap {
 
   private async pickDevices() {
     const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+    // Respect whatever the user chose in the browser permission prompt
+    const chosenVideo = tmp.getVideoTracks()[0]?.getSettings().deviceId;
+    const chosenAudio = tmp.getAudioTracks()[0]?.getSettings().deviceId;
     tmp.getTracks().forEach((t) => t.stop());
 
     const all = await navigator.mediaDevices.enumerateDevices();
@@ -91,16 +95,14 @@ class StreamCap {
 
     if (!vids.length) throw new Error("No video devices found");
 
-    const cap = vids.find((d) => CAPTURE_KEYWORDS.test(d.label));
-    this.videoId = cap?.deviceId || vids[0].deviceId;
+    // User's browser-level choice first, then capture card keyword, then first available
+    this.videoId = chosenVideo
+      || vids.find((d) => CAPTURE_KEYWORDS.test(d.label))?.deviceId
+      || vids[0].deviceId;
 
-    const real = auds.filter(
-      (d) => d.deviceId !== "default" && d.deviceId !== "communications"
-        && !/\b(microphone|mic)\b/i.test(d.label),
-    );
-    const vidLabel = (cap?.label || "").toLowerCase().split(" ")[0];
-    const match = vidLabel ? real.find((a) => a.label.toLowerCase().includes(vidLabel)) : undefined;
-    this.audioId = match?.deviceId || real[0]?.deviceId || auds[0]?.deviceId || "";
+    this.audioId = chosenAudio
+      || auds.find((d) => d.deviceId !== "default" && d.deviceId !== "communications")?.deviceId
+      || auds[0]?.deviceId || "";
 
     this.save();
   }
@@ -144,8 +146,8 @@ class StreamCap {
 
   // ── Stream lifecycle ────────────────────────────────────────
 
-  private async startStream() {
-    if (this.busy) return;
+  private async startStream(): Promise<boolean> {
+    if (this.busy) return false;
     this.busy = true;
 
     try {
@@ -178,6 +180,7 @@ class StreamCap {
       this.setupRecorder();
       this.updateUI();
       this.save();
+      return true;
     } finally {
       this.busy = false;
     }
@@ -195,33 +198,45 @@ class StreamCap {
       this.status("Stop recording first", "error", 3000);
       return;
     }
-    this.status("Restarting...", "loading");
-    this.stop();
-    await this.startStream();
-    this.status("Stream restarted", "success", 2000);
+    try {
+      this.status("Restarting...", "loading");
+      this.stop();
+      if (await this.startStream()) {
+        this.status("Stream restarted", "success", 2000);
+      } else {
+        this.status("Stream busy, try again", "error", 3000);
+      }
+    } catch (e: any) {
+      this.status(e.message || "Restart failed", "error");
+    }
   }
 
   // ── Recording ───────────────────────────────────────────────
 
   private setupRecorder() {
     if (!this.stream) return;
-    const mime = [
-      "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus",
-      "video/webm", "video/mp4",
-    ].find((t) => MediaRecorder.isTypeSupported(t)) || "";
+    try {
+      const mime = [
+        "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus",
+        "video/webm", "video/mp4",
+      ].find((t) => MediaRecorder.isTypeSupported(t)) || "";
 
-    this.recMime = mime;
-    const opts: MediaRecorderOptions = { videoBitsPerSecond: 8_000_000 };
-    if (mime) opts.mimeType = mime;
+      this.recMime = mime;
+      const opts: MediaRecorderOptions = { videoBitsPerSecond: 8_000_000 };
+      if (mime) opts.mimeType = mime;
 
-    this.recorder = new MediaRecorder(this.stream, opts);
-    this.recorder.ondataavailable = (e) => { if (e.data?.size) this.blobs.push(e.data); };
-    this.recorder.onstop = () => this.finishRecording();
-    this.recorder.onerror = () => {
-      this.recording = false;
-      this.el.record.classList.remove("recording");
-      this.status("Recording error", "error");
-    };
+      this.recorder = new MediaRecorder(this.stream, opts);
+      this.recorder.ondataavailable = (e) => { if (e.data?.size) this.blobs.push(e.data); };
+      this.recorder.onstop = () => this.finishRecording();
+      this.recorder.onerror = () => {
+        this.recording = false;
+        this.el.record.classList.remove("recording");
+        this.status("Recording error", "error");
+      };
+    } catch (e) {
+      console.warn("MediaRecorder setup failed:", e);
+      this.recorder = null;
+    }
   }
 
   private toggleRecord() {
@@ -329,6 +344,13 @@ class StreamCap {
 
   // ── Helpers ─────────────────────────────────────────────────
 
+  private async deviceExists(deviceId: string): Promise<boolean> {
+    try {
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      return devs.some((d) => d.kind === "videoinput" && d.deviceId === deviceId);
+    } catch { return false; }
+  }
+
   private bestFps(res: string): number {
     const fps = this.modes.get(res);
     return fps?.size ? Math.max(...fps) : 30;
@@ -390,15 +412,19 @@ class StreamCap {
 
     this.el.videoSel.addEventListener("change", async (e) => {
       if (this.recording) { this.status("Stop recording first", "error", 3000); return; }
-      this.videoId = (e.target as HTMLSelectElement).value;
-      this.save();
-      this.status("Probing new device...", "loading");
-      this.stop();
-      await this.probe();
-      this.resolution = this.modes.keys().next().value || "1920x1080";
-      this.framerate = this.bestFps(this.resolution);
-      await this.startStream();
-      this.status("Device changed", "success", 2000);
+      try {
+        this.videoId = (e.target as HTMLSelectElement).value;
+        this.save();
+        this.status("Probing new device...", "loading");
+        this.stop();
+        await this.probe();
+        this.resolution = this.modes.keys().next().value || "1920x1080";
+        this.framerate = this.bestFps(this.resolution);
+        await this.startStream();
+        this.status("Device changed", "success", 2000);
+      } catch (err: any) {
+        this.status(err.message || "Device switch failed", "error");
+      }
     });
 
     this.el.audio.addEventListener("change", (e) => {
@@ -422,15 +448,19 @@ class StreamCap {
 
     navigator.mediaDevices?.addEventListener("devicechange", async () => {
       if (this.busy) return;
-      const devs = await navigator.mediaDevices.enumerateDevices();
-      if (!devs.some((d) => d.kind === "videoinput" && d.deviceId === this.videoId)) {
-        this.status("Device disconnected", "error");
-        this.stop();
-        await this.pickDevices();
-        await this.probe();
-        await this.startStream();
+      try {
+        const devs = await navigator.mediaDevices.enumerateDevices();
+        if (!devs.some((d) => d.kind === "videoinput" && d.deviceId === this.videoId)) {
+          this.status("Device disconnected", "error");
+          this.stop();
+          await this.pickDevices();
+          await this.probe();
+          await this.startStream();
+        }
+        this.updateUI();
+      } catch (e: any) {
+        this.status(e.message || "Device recovery failed", "error");
       }
-      this.updateUI();
     });
   }
 }
