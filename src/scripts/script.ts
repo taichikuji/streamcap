@@ -287,7 +287,9 @@ class StreamCap {
     this.fill(this.el.resolution, allRes);
 
     const fps = this.modes.get(this.resolution);
-    const allFps = TEST_FRAMERATES.map((f) => ({
+    const knownFps = new Set(TEST_FRAMERATES);
+    if (fps) fps.forEach((f) => knownFps.add(f));
+    const allFps = Array.from(knownFps).sort((a, b) => b - a).map((f) => ({
       value: String(f), label: `${f} fps`, selected: f === this.framerate, disabled: !fps?.has(f),
     }));
     this.fill(this.el.framerate, allFps);
