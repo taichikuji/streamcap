@@ -10,7 +10,7 @@
 
 StreamCap is a lightweight, browser-based application that allows you to easily view, capture screenshots, and record video from your Capture Device. Perfect for streamers, content creators, or anyone who needs quick access to their Capture Device feed without installing additional software.
 
-## ✨ Features
+## Features
 
 - **Live Preview**: View your webcam or capture card feed directly in your browser
 - **Screenshot Capture**: Take instant snapshots with a single click
@@ -20,7 +20,7 @@ StreamCap is a lightweight, browser-based application that allows you to easily 
 - **Responsive Design**: Works on desktop and mobile devices
 - **No Installation**: Runs entirely in your web browser
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -61,7 +61,7 @@ yarn build
 
 The built files will be available in the `dist` directory.
 
-## 🔧 Technologies Used
+## Technologies Used
 
 - <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/github/package-json/dependency-version/taichikuji/streamcap/dev/typescript?logo=typescript" alt="TypeScript" /></a>
 - <a href="https://parceljs.org/"><img src="https://img.shields.io/github/package-json/dependency-version/taichikuji/streamcap/dev/parcel?logo=parcel" alt="Parcel" /></a>
@@ -71,12 +71,22 @@ The built files will be available in the `dist` directory.
 
 - <a href="https://www.npmjs.com/package/fix-webm-duration"><img src="https://img.shields.io/github/package-json/dependency-version/taichikuji/streamcap/fix-webm-duration" alt="fix-webm-duration" /></a>
 
-## 🌐 Deployment
+## Deployment
 
 This project is set up for easy deployment to Netlify. The included `netlify.toml` file contains all necessary configuration.
 
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/taichikuji/streamcap)
 
-## 🤝 Contributing
+## Browser Support
+
+| Browser | Status |
+|---------|--------|
+| Chrome / Edge (Linux, Windows, macOS) | Fully supported |
+| Firefox (all platforms) | Best effort — some capture cards may have limited resolution/framerate negotiation |
+| Safari | Not tested — WebRTC capture card support varies |
+
+> StreamCap relies on `getUserMedia`, `MediaRecorder`, and `MediaStreamTrack.getCapabilities()`. Chromium-based browsers expose the richest capability data for USB capture devices.
+
+## Contributing
 
 Contributions, issues and feature requests are welcome! Feel free to check the [issues page](https://github.com/taichikuji/streamcap/issues).
