@@ -280,14 +280,17 @@ class StreamCap {
   // ── UI ──────────────────────────────────────────────────────
 
   private updateUI() {
-    const resolutions = Array.from(this.modes.keys())
-      .sort((a, b) => +b.split("x")[0] - +a.split("x")[0]);
-
-    this.fill(this.el.resolution, resolutions, this.resolution);
+    const allRes = TEST_RESOLUTIONS.map(([w, h]) => {
+      const key = `${w}x${h}`;
+      return { value: key, label: key, selected: key === this.resolution, disabled: !this.modes.has(key) };
+    });
+    this.fill(this.el.resolution, allRes);
 
     const fps = this.modes.get(this.resolution);
-    const fpsArr = fps ? Array.from(fps).sort((a, b) => b - a).map(String) : ["30"];
-    this.fill(this.el.framerate, fpsArr, String(this.framerate));
+    const allFps = TEST_FRAMERATES.map((f) => ({
+      value: String(f), label: `${f} fps`, selected: f === this.framerate, disabled: !fps?.has(f),
+    }));
+    this.fill(this.el.framerate, allFps);
 
     if (fps && !fps.has(this.framerate)) {
       this.framerate = this.bestFps(this.resolution);
@@ -311,7 +314,7 @@ class StreamCap {
 
   private fill(
     sel: HTMLSelectElement,
-    opts: string[] | { value: string; label: string; selected?: boolean }[],
+    opts: string[] | { value: string; label: string; selected?: boolean; disabled?: boolean }[],
     selected?: string,
   ) {
     sel.innerHTML = "";
@@ -323,6 +326,7 @@ class StreamCap {
       } else {
         const el = new Option(o.label, o.value);
         if (o.selected) el.selected = true;
+        if (o.disabled) el.disabled = true;
         sel.add(el);
       }
     }
