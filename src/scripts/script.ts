@@ -427,10 +427,11 @@ class StreamCap {
         ? Math.round(actualSettings.frameRate)
         : this.selectedFramerate;
 
-      this.elements.video.srcObject = stream;
-      await new Promise<void>((resolve) => {
+      const metadataReady = new Promise<void>((resolve) => {
         this.elements.video.onloadedmetadata = () => resolve();
       });
+      this.elements.video.srcObject = stream;
+      await metadataReady;
       this.elements.video.muted = false;
 
       this.setupMediaRecorder();
