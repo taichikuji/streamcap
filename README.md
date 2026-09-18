@@ -24,8 +24,7 @@ StreamCap is a lightweight, browser-based application that allows you to easily 
 
 ### Prerequisites
 
-- Node.js
-- npm or yarn
+- Bun
 
 ### Installation
 
@@ -37,16 +36,12 @@ StreamCap is a lightweight, browser-based application that allows you to easily 
 
 2. Install dependencies
    ```bash
-   npm install
-   # or
-   yarn
+   bun install
    ```
 
 3. Start the development server
    ```bash
-   npm run dev
-   # or
-   yarn dev
+   bun run dev
    ```
 
 4. Open your browser and navigate to `http://localhost:1234`
@@ -54,17 +49,14 @@ StreamCap is a lightweight, browser-based application that allows you to easily 
 ### Building for production
 
 ```bash
-npm run build
-# or
-yarn build
+bun run build
 ```
 
 The built files will be available in the `dist` directory.
 
 ## Technologies Used
 
-- <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/github/package-json/dependency-version/taichikuji/streamcap/dev/typescript?logo=typescript" alt="TypeScript" /></a>
-- <a href="https://parceljs.org/"><img src="https://img.shields.io/github/package-json/dependency-version/taichikuji/streamcap/dev/parcel?logo=parcel" alt="Parcel" /></a>
+- <a href="https://bun.sh/"><img src="https://img.shields.io/badge/runtime-Bun-f9f1e1?logo=bun" alt="Bun" /></a>
 - <a href="https://sass-lang.com/"><img src="https://img.shields.io/github/package-json/dependency-version/taichikuji/streamcap/dev/sass?logo=sass" alt="Sass" /></a>
 
 ### Dependencies
